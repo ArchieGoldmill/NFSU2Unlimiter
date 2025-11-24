@@ -30,6 +30,12 @@ bool IsRacer(BYTE CarTypeID)
 	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x844) == 0;
 }
 
+bool IsCop(BYTE CarTypeID)
+{
+	if (CarTypeID >= CarCount) return 0;
+	return *(BYTE*)((*(DWORD*)_CarTypeInfoArray) + CarTypeID * 0x890 + 0x844) == 1;
+}
+
 bool IsTraffic(BYTE CarTypeID)
 {
 	if (CarTypeID >= CarCount) return 0;
@@ -82,8 +88,20 @@ void GetAndDoFEPartAnim(int CarSlotID, bool on, float amount)
 
 	if (loaded)
 	{
-		if (location == 5) // Both doors
+		if (location == 6) // Both hood and trunk
 		{
+			FEDoCarPartAnimNow(0, on, amount);
+			FEDoCarPartAnimNow(1, on, amount);
+		}
+		else if (location == 5) // Both doors
+		{
+			FEDoCarPartAnimNow(2, on, amount);
+			FEDoCarPartAnimNow(3, on, amount);
+		}
+		else if (location == 4) // Explode (all)
+		{
+			FEDoCarPartAnimNow(0, on, amount);
+			FEDoCarPartAnimNow(1, on, amount);
 			FEDoCarPartAnimNow(2, on, amount);
 			FEDoCarPartAnimNow(3, on, amount);
 		}

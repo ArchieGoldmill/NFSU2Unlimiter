@@ -91,11 +91,12 @@ bool (*IsBrowsingBrakePaint)() = (bool(*)())0x50F1D0;
 void(__thiscall* RideInfo_SyncVisualPartsWithPhysics)(DWORD* CarCustomizeManager, bool perf, bool random) = (void(__thiscall*)(DWORD*, bool, bool))0x6399D0;
 int (*CarAnimManager_GetLocationState)(int CarAnimManager, int CarAnimLocation) = (int(*)(int, int))0x433CD0;
 int (*CarCustomizeManager_GetPartUnlockFilter)() = (int(*)())0x50F0D0;
-int (*CarCustomizeManager_GetPaintSetupPrice)(DWORD* CarCustomizeManager) = (int(*)(DWORD*))0x521530;
+int (__thiscall* CarCustomizeManager_GetPaintSetupPrice)(DWORD* CarCustomizeManager) = (int(__thiscall*)(DWORD*))0x521530;
 float (*CarAnimManager_GetAnimationTime)(int CarAnimManager, int CarAnimLocation, int Unk) = (float(*)(int, int, int))0x434610;
 void(__thiscall* CarRenderInfo_RenderNeon2)(DWORD* CarRenderInfo, int eView, float* bV3, float* bM4, int a5, DWORD* PosMarkerPtr, int a7, float a8, int a9, float Brightness) = (void(__thiscall*)(DWORD*, int, float*, float*, int, DWORD*, int, float, int, float))0x60D7F0;
 bool(__cdecl* UnlockSystem_IsCarPartUnlocked)(int UnlockFilter, int CarSlotID, DWORD* CarPart, int Unk) = (bool(_cdecl*)(int, int, DWORD*, int))0x52A010;
 int(*bRandom)(int Max) = (int(*)(int))0x43C1C0;
+float(*bRandomF)(float Max) = (float(*)(float))0x43C1F0;
 int(__thiscall* CarCustomizeManager_GetNumDecalsForInstalledLayoutPart)(DWORD* CarCustomizeManager, int CarSlotID) = (int(__thiscall*)(DWORD*, int))0x5218B0;
 int(__thiscall* CarCustomizeManager_GetLayoutPart_Game)(DWORD* CarCustomizeManager, int CarSlotID, int LayoutID) = (int(__thiscall*)(DWORD*, int, int))0x521940;
 void(__thiscall* CarCustomizeManager_PreviewPaintPart)(DWORD* CarCustomizeManager, int CarSlotID, DWORD* PartToPaint) = (void(__thiscall*)(DWORD*, int, DWORD*))0x55C1F0;
@@ -183,11 +184,14 @@ DWORD* (__thiscall* PartSelectionScreen_GetSelectedPart)(DWORD* PartSelectionScr
 DWORD* (__thiscall* PartSelectionScreen_StartBrowsingWheels)(DWORD* PartSelectionScreen) = (DWORD * (__thiscall*)(DWORD*))0x53A310;
 DWORD* (__thiscall* PartSelectionScreen_StartBrowsingCarbonParts)(DWORD* PartSelectionScreen) = (DWORD * (__thiscall*)(DWORD*))0x53A3D0;
 void(__thiscall* CareerSpeech_HandleFESpeechEvent)(DWORD* CareerSpeech, int id) = (void(__thiscall*)(DWORD*, int))0x5243D0;
+void(__thiscall* CarCustomizeManager_AddPaintShopPart)(DWORD* CarCustomizeManager, int slot, DWORD* part) = (void(__thiscall*)(DWORD*, int, DWORD*))0x53AF20;
 void(__thiscall* CarCustomizeManager_AddVinylToPaintSetup)(DWORD* CarCustomizeManager, int slot, DWORD* part) = (void(__thiscall*)(DWORD*, int, DWORD*))0x54FDB0;
 void(__thiscall* CarCustomizeManager_InstallPart)(DWORD* CarCustomizeManager, int slot, DWORD* part) = (void(__thiscall*)(DWORD*, int, DWORD*))0x55C230;
 bool(__thiscall* CarCustomizeManager_IsPartAvailable)(DWORD* CarCustomizeManager, int slot, DWORD* part) = (bool(__thiscall*)(DWORD*, int, DWORD*))0x530330;
 bool(__thiscall* CarCustomizeManager_IsPartPurchased)(DWORD* CarCustomizeManager, int slot, DWORD* part) = (bool(__thiscall*)(DWORD*, int, DWORD*))0x521BE0;
+bool(__thiscall* CarCustomizeManager_IsUniqueInCurrentSetup)(DWORD* CarCustomizeManager) = (bool(__thiscall*)(DWORD*))0x521580;
 void(__thiscall* CarCustomizeManager_PlaySound)(DWORD* CarCustomizeManager, DWORD* part) = (void(__thiscall*)(DWORD*, DWORD*))0x521280;
+void(__thiscall* CarCustomizeManager_RemoveDecal)(DWORD* CarCustomizeManager, int slot) = (void(__thiscall*)(DWORD*, int))0x530290;
 void(__thiscall* CarCustomizeManager_ResetPreviewToPaintSetup)(DWORD* CarCustomizeManager) = (void(__thiscall*)(DWORD*))0x55C460;
 DWORD* (*CustomizationScreenManager_Instance)() = (DWORD * (*)())0x54F980;
 void(__thiscall* CustomizationScreenManager_ChangeToNextScreen)(DWORD* CustomizationScreenManager) = (void(__thiscall*)(DWORD*))0x55BD60;
@@ -212,6 +216,7 @@ DWORD(*GetDoorlineMaskHash)(DWORD* RideInfo) = (DWORD(*)(DWORD*))0x612C40;
 int(__thiscall* CarPart_GetCarTypeNameHash)(DWORD* CarPart) = (int(__thiscall*)(DWORD*))0x610010;
 int(*CompositeWheel)(DWORD* ride_info, DWORD dest_namehash, DWORD src_namehash, DWORD mask_namehash, int paint_slot) = (int(*)(DWORD*, DWORD, DWORD, DWORD, int))0x61DE90;
 bool(*PartsCategoryRimsIsLocked)() = (bool(*)())0x539C20;
+ePositionMarker* (__thiscall* eModel_GetPositionMarker)(DWORD* eModel, ePositionMarker* previous) = (ePositionMarker * (__thiscall*)(DWORD*, ePositionMarker*))0x48D8A0;
 void(__thiscall* eModel_ReplaceLightMaterial_Game)(DWORD* eModel, int NameHash, int LightMaterial) = (void(__thiscall*)(DWORD*, int, int))0x48D860;
 int(__cdecl* bSPrintf)(const char* buf, const char* format, ...) = (int(__cdecl*)(const char*, const char*, ...))0x4400D0;
 void(__thiscall* CarRenderInfo_UpdateCarReplacementTextures_Game)(DWORD* CarRenderInfo) = (void(__thiscall*)(DWORD*))0x615280;
@@ -236,6 +241,14 @@ int(__thiscall* eStreamPackLoader_TestLoadStreamingEntry)(DWORD* eStreamPackLoad
 bool(*IceCategoryIsLocked)(int CarSlotID) = (bool(*)(int))0x539D00;
 void(__thiscall* SelectCarCameraMover_MoveToNewDefaultOrientation)(DWORD* SelectCarCameraMover, float FoV, float XEye, float XLook, float YEye, float XRot, float Zoom, float YRot, float AnimTime, float Focus) = (void(__thiscall*)(DWORD*, float, float, float, float, float, float, float, float, float))0x4533B0;
 void(__thiscall* SelectCarCameraMover_SetDefaultOrientation)(DWORD* SelectCarCameraMover, float FoV, float XEye, float XLook, float YEye, float XRot, float Zoom, float YRot, float AnimTime, float Focus) = (void(__thiscall*)(DWORD*, float, float, float, float, float, float, float, float, float))0x445500;
+float(*bSin)(float angle) = (float(*)(float))0x43C350;
+void(*bCopy)(bMatrix4* dest, bMatrix4* a) = (void(*)(bMatrix4*, bMatrix4*))0x4012B0;
+float(*Sim_GetTime)() = (float(*)())0x6E8DE0; // wrong
+bMatrix4* (*eFrameMallocMatrix)(int num_matrices) = (bMatrix4 * (*)(int))0x401E80;
+int (*eGetCurrentViewMode)() = (int(*)())0x5B98A0;
+int(__thiscall* eView_GetPixelSize)(DWORD* view, bVector3* position, float radius) = (int(__thiscall*)(DWORD*, bVector3*, float))0x48ACB0;
+int(__thiscall* eView_GetVisibleState)(DWORD* view, bVector3* aabb_min, bVector3* aabb_max, bMatrix4* local_world) = (int(__thiscall*)(DWORD*, bVector3*, bVector3*, bMatrix4*))0x48AC60;
+
 
 // Functions which has odd calling conventions (using UserCalls.h to wrap them)
 char const* (*SearchForString)(unsigned int EDX_StringHash) = (char const* (*)(unsigned int))0x4FF9D0;

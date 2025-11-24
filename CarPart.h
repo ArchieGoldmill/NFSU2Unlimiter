@@ -88,3 +88,29 @@ int __fastcall CarPart_TrunkAudioSlotAvailable(DWORD* _CarPart, void* EDX_Unused
 
     return result;
 }
+
+bool __fastcall CarPart_HasExcludeDecal(DWORD* _CarPart, void* EDX_Unused, int CarSlotID)
+{
+	DWORD SlotNameHash = CarPart_GetAppliedAttributeUParam(_CarPart, CT_bStringHash("EXCLUDEDECAL"), 0);
+	if (!SlotNameHash) return false;
+
+    return SlotNameHash == bStringHash(GetCarSlotIDName(CarSlotID));
+}
+
+int __fastcall CarPart_GetExcludeDecal(DWORD* _CarPart, void* EDX_Unused)
+{
+    int slot = -1;
+    DWORD SlotNameHash = CarPart_GetAppliedAttributeUParam(_CarPart, CT_bStringHash("EXCLUDEDECAL"), 0);
+    if (!SlotNameHash) return slot;
+
+    for (int i = CAR_SLOT_ID::__MODEL_FIRST; i < CAR_SLOT_ID::__NUM; i++)
+    {
+        if (SlotNameHash == bStringHash(GetCarSlotIDName(i)))
+        {
+            slot = i;
+            break;
+        }
+	}
+
+    return slot;
+}

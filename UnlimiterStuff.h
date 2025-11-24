@@ -8,7 +8,7 @@
 using namespace std;
 
 int CarCount, ReplacementCar, CarArraySize, CarPartCount, CarPartPartsTableSize, TrafficCarCount, TheCounter;
-bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
+bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsFix, ExpandMemoryPools, AddOnOpponentsPartsFix, WorldCrashFixes, EnableFNGFixes, CabinNeonFix, RaceEngageDialogFix, RandomNameHook, ExtendFeCarLimits, DisableTextureReplacement, DisableLightFlareColors, ExportCameraInfoIni, StreamingTrafficCarManagerFix;
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
@@ -94,6 +94,7 @@ int Init()
 
 	// Debug
 	DisableTextureReplacement = mINI_ReadInteger(Settings, "Debug", "DisableTextureReplacement", 0) != 0;
+	DisableLightFlareColors = mINI_ReadInteger(Settings, "Debug", "DisableLightFlareColors", 0) != 0;
 	ExportCameraInfoIni = mINI_ReadInteger(Settings, "Debug", "ExportCameraInfo", 0) != 0;
 	EnableReleasePrintf = mINI_ReadInteger(Settings, "Debug", "EnableReleasePrintf", EnableReleasePrintf) != 0;
 
@@ -178,6 +179,10 @@ int Init()
 	injector::MakeCALL(0x553195, ChooseDecalCategory_Setup, true); // ChooseDecalCategory::ChooseDecalCategory
 	injector::WriteMemory(0x79CAA8, &ChooseDecalCategory_Setup, true); // ChooseDecalCategory::vtable
 	injector::MakeJMP(0x521940, CarCustomizeManager_GetLayoutPart, true); //CarCustomizeManager::GetLayoutPart, 4 references
+	injector::MakeCALL(0x56B5F0, ChooseDecalCategory_InstallNeededLayoutPart, true); //ChooseDecalCategory::NotificationMessage
+	injector::MakeCALL(0x56B823, ChooseDecalCategory_InstallNeededLayoutPart, true); //ChooseDecalCategory::NotificationMessage
+	injector::MakeCALL(0x56B58D, ChooseDecalCategory_NeedsNewLayoutPart, true); //ChooseDecalCategory::NotificationMessage
+	injector::WriteMemory<BYTE>(0x56B557, 0xEB, true); // ChooseDecalCategory::NotificationMessage, force enable hood decals menu
 
 	// Paint menu
 	injector::MakeCALL(0x563C64, ChoosePaintScreen_BuildPaintCategoryList, true); // ChoosePaintScreen::Setup
@@ -478,6 +483,17 @@ int Init()
 		// Neon texture
 		hb_GetTextureInfo.fun = injector::MakeCALL(0x638858, GetNeonTextureInfo, true).get(); // CarRenderInfo::ctor
 		injector::MakeRangedNOP(0x638868, 0x63886E, true); // Prevent the game from changing it back to original
+	}
+
+	if (!DisableLightFlareColors)
+	{
+		injector::MakeCALL(0x6389D6, CarRenderInfo_CreateCarLightFlares, true); // CarRenderInfo::CarRenderInfo
+
+		injector::MakeCALL(0x61AD6C, CarRenderInfo_RenderFlaresOnCar, true); // RenderFEFlares
+		injector::MakeCALL(0x61AFE1, CarRenderInfo_RenderFlaresOnCar, true); // RenderFlares
+		injector::MakeCALL(0x61B1A2, CarRenderInfo_RenderFlaresOnCar, true); // RenderFlares
+
+		hb_eRenderLightFlare.fun = injector::MakeJMP(0x6159DE, RenderLightFlareCodeCave, true).get(); // CarRenderInfo::RenderFlaresOnCar
 	}
 
 	// Fix Cabin Neon

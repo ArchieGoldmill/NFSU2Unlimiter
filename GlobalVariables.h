@@ -1053,10 +1053,12 @@ float CarSelectTireSteerAngle_Backup;
 
 std::filesystem::path CurrentWorkingDirectory;
 
-DWORD ColorHashes[3][4] = {
-	{0x0000D99A, 0x02DDC8F0, 0x00136707, 0x026E1AC5}, // RED, GREEN, BLUE, ALPHA
-	{0x001C0D0C, 0x5E96E722, 0x02804819, 0x50317397}, // RED2, GREEN2, BLUE2, ALPHA2
-	{0x368A1A6A, 0x00BA7DC0, 0x07C4C1D7, 0x004ACF95} // DISPRED, DISPGREEN, DISPBLUE, DISPALPHA
+DWORD ColorHashes[5][4] = {
+	{CT_bStringHash("RED"),		CT_bStringHash("GREEN"),		CT_bStringHash("BLUE"),			CT_bStringHash("ALPHA")		 },
+	{CT_bStringHash("RED2"),	CT_bStringHash("GREEN2"),		CT_bStringHash("BLUE2"),		CT_bStringHash("ALPHA2")	 },
+	{CT_bStringHash("DISPRED"),	CT_bStringHash("DISPGREEN"),	CT_bStringHash("DISPBLUE"),		CT_bStringHash("DISPALPHA")	 },
+	{CT_bStringHash("REDR"),	CT_bStringHash("GREENR"),		CT_bStringHash("BLUER"),		CT_bStringHash("ALPHAR")	 },
+	{CT_bStringHash("REDR2"),	CT_bStringHash("GREENR2"),		CT_bStringHash("BLUER2"),		CT_bStringHash("ALPHAR2")	 }
 };
 
 char* GetDefaultRimBrandName(int ID)

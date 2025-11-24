@@ -97,9 +97,11 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="bMatrix.h" />
     <ClInclude Include="bReleasePrintf.h" />
     <ClInclude Include="BuyPerformanceParts.h" />
     <ClInclude Include="BuyPerfPartWidget.h" />
+    <ClInclude Include="bVector.h" />
     <ClInclude Include="CameraInfo.h" />
     <ClInclude Include="CarCustomizeManager.h" />
     <ClInclude Include="CareerEventData.h" />
@@ -120,10 +122,13 @@ copy "$(TargetDir)*.pdb" "G:\Oyunlar\Need for Speed Underground 2 Dirty\scripts"
     <ClInclude Include="ChooseSpinnerBrand.h" />
     <ClInclude Include="ChooseVinylLayerScreen.h" />
     <ClInclude Include="CodeCaves.h" />
+    <ClInclude Include="Color.h" />
     <ClInclude Include="CustomizationScreenManager.h" />
     <ClInclude Include="CustomizeNeonMenu.h" />
     <ClInclude Include="DetailsPane.h" />
     <ClInclude Include="DialogInterface.h" />
+    <ClInclude Include="eLightFlare.h" />
+    <ClInclude Include="ePositionMarker.h" />
     <ClInclude Include="FeCarLimits.h" />
     <ClInclude Include="feDialogConfig.h" />
     <ClInclude Include="FEPackage.h" />

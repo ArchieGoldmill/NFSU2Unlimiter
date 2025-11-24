@@ -35,12 +35,12 @@ DWORD* __fastcall CarCustomizeManager_GetLayoutPart(DWORD* CarCustomizeManager, 
 {
     DWORD* WideBodyPart; // eax
     DWORD* QuarterPart; // eax
+    DWORD* HoodPart; // eax
     int CarTypeID; // edi
     DWORD* TheCarPart; // eax
-    int i; // ebx
     int CarPartID; // [esp+14h] [ebp+8h]
-    char QuarterNameBuf[64];
-    DWORD QuarterNamePartialHash;
+    char NameBuf[64];
+    DWORD NamePartialHash;
     DWORD PartHash;
 
     if (CarSlotID >= CAR_SLOT_ID::DECAL_HOOD && CarSlotID <= CAR_SLOT_ID::WIDEBODY_DECAL_RIGHT_QUARTER)
@@ -51,34 +51,53 @@ DWORD* __fastcall CarCustomizeManager_GetLayoutPart(DWORD* CarCustomizeManager, 
 
         WideBodyPart = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::WIDE_BODY);
         QuarterPart = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::QUARTER);
+        HoodPart = RideInfo_GetPart(CarCustomizeManager + 592, CAR_SLOT_ID::HOOD);
 
         if (WideBodyPart)
         {
             if (*((BYTE*)WideBodyPart + 5) >> 5)
                 CarSlotID = CarCustomizeManager_TranslateToWidebodyLayoutSlotIfNecessary(CarSlotID);
         }
-        if (QuarterPart)
+        if (QuarterPart && (CarSlotID == CAR_SLOT_ID::DECAL_LEFT_QUARTER || CarSlotID == CAR_SLOT_ID::DECAL_RIGHT_QUARTER))
         {
-            for (int i = 1; i <= 99; i++)
+            for (int i = 0; i <= 99; i++)
             {
-                sprintf(QuarterNameBuf, "%s_KIT%02d_", GetCarTypeName(CarTypeID), i);
-                QuarterNamePartialHash = bStringHash(QuarterNameBuf);
-                PartHash = bStringHash2("QUARTER", QuarterNamePartialHash);
+                if (i == 0) sprintf(NameBuf, "%s_", GetCarTypeName(CarTypeID));
+                else sprintf(NameBuf, "%s_KIT%02d_", GetCarTypeName(CarTypeID), i);
+
+                NamePartialHash = bStringHash(NameBuf);
+                PartHash = bStringHash2("QUARTER", NamePartialHash);
+                
                 if (*(unsigned int*)QuarterPart == PartHash)
                 {
                     switch (CarSlotID)
                     {
                     case CAR_SLOT_ID::DECAL_LEFT_QUARTER: // DECAL_LEFT_QUARTER
-                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CAR_SLOT_ID::DECAL_LEFT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_LEFT_QUARTER_RECT_MEDIUM" : "DECAL_LEFT_QUARTER_RECT_SMALL", QuarterNamePartialHash), 0, -1);
+                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CAR_SLOT_ID::DECAL_LEFT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_LEFT_QUARTER_RECT_MEDIUM" : "DECAL_LEFT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
                     case CAR_SLOT_ID::DECAL_RIGHT_QUARTER: // DECAL_RIGHT_QUARTER
-                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CAR_SLOT_ID::DECAL_RIGHT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_RIGHT_QUARTER_RECT_MEDIUM" : "DECAL_RIGHT_QUARTER_RECT_SMALL", QuarterNamePartialHash), 0, -1);
+                        return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CAR_SLOT_ID::DECAL_RIGHT_QUARTER, bStringHash2(LayoutID == 1 ? "DECAL_RIGHT_QUARTER_RECT_MEDIUM" : "DECAL_RIGHT_QUARTER_RECT_SMALL", NamePartialHash), 0, -1);
                     }
+                }
+            }
+        }
+        if (HoodPart && CarSlotID == CAR_SLOT_ID::DECAL_HOOD)
+        {
+            for (int i = 0; i <= 99; i++)
+            {
+                if (i == 0) sprintf(NameBuf, "%s_", GetCarTypeName(CarTypeID));
+                else sprintf(NameBuf, "%s_STYLE%02d_", GetCarTypeName(CarTypeID), i);
+                NamePartialHash = bStringHash(NameBuf);
+                PartHash = bStringHash2("HOOD", NamePartialHash);
+
+                if (*(unsigned int*)HoodPart == PartHash)
+                {
+                    return CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarTypeID, CAR_SLOT_ID::DECAL_HOOD, bStringHash2(LayoutID == 1 ? "DECAL_HOOD_RECT_MEDIUM" : "DECAL_HOOD_RECT_SMALL", NamePartialHash), 0, -1);
                 }
             }
         }
         
         TheCarPart = CarPartDatabase_NewGetFirstCarPart((DWORD*)_CarPartDB, CarTypeID, CarSlotID, 0, -1);
-        for (i = 1; TheCarPart; TheCarPart = CarPartDatabase_NewGetNextCarPart((DWORD*)_CarPartDB, TheCarPart, CarTypeID, CarSlotID, 0, -1))
+        for (int i = 1; TheCarPart; TheCarPart = CarPartDatabase_NewGetNextCarPart((DWORD*)_CarPartDB, TheCarPart, CarTypeID, CarSlotID, 0, -1))
         {
             if (*((char*)TheCarPart + 4) == CarPartID)
             {
@@ -89,4 +108,29 @@ DWORD* __fastcall CarCustomizeManager_GetLayoutPart(DWORD* CarCustomizeManager, 
         }
     }
     return 0;
+}
+
+DWORD* __fastcall CarCustomizeManager_GetLayoutInSetup(DWORD* CarCustomizeManager, void *EDX_Unused, int slot)
+{
+    DWORD* LastSelPartInSetup; // edi
+    DWORD* SelPartInSetup; // esi
+    int SelPartSlot; // eax
+
+    if (slot < CAR_SLOT_ID::DECAL_HOOD)
+        return 0;
+    if (slot > CAR_SLOT_ID::WIDEBODY_DECAL_RIGHT_QUARTER)
+        return 0;
+    LastSelPartInSetup = CarCustomizeManager + 18;
+    if ((DWORD*)CarCustomizeManager[18] == CarCustomizeManager + 18)
+        return 0;
+    SelPartInSetup = (DWORD*)CarCustomizeManager[18];
+    while (1)
+    {
+        if (SelPartInSetup[3] == slot)
+            break;
+        SelPartInSetup = (DWORD*)*SelPartInSetup;
+        if (SelPartInSetup == LastSelPartInSetup)
+            return 0;
+    }
+    return (DWORD*)SelPartInSetup[2];
 }

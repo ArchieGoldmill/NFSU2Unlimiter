@@ -15,10 +15,10 @@
 #include "bReleasePrintf.h"
 
 // Structures
-//#include "bVector.h"
-//#include "bMatrix.h"
-//#include "ePositionMarker.h"
-//#include "eLightFlare.h"
+#include "bVector.h"
+#include "bMatrix.h"
+#include "ePositionMarker.h"
+#include "eLightFlare.h"
 #include "UsedCarTextureInfo.h"
 #include "LoadedSkinLayer.h"
 #include "LoadedSkin.h"

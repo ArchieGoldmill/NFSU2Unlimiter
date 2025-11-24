@@ -124,11 +124,12 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
     CarType = *RideInfo;
     memset(RideInfo + 526, 1u, 0xA8u);
     *((WORD*)RideInfo + 1136) = 257;
-    for (i = 0; i < 170; ++i)
+    for (i = CAR_SLOT_ID::__MODEL_FIRST; i < CAR_SLOT_ID::__NUM; ++i)
     {
         TheCarPart = (DWORD*)RideInfo[i + 356];
         if (TheCarPart)
         {
+            /*
             if (CarPart_HasAppliedAttribute(TheCarPart, CT_bStringHash("EXCLUDEDECAL")))
             {
                 for (j = CarPart_GetNextAppliedAttribute(TheCarPart, CT_bStringHash("EXCLUDEDECAL"), 0); // GetFirstAppliedAttribute
@@ -136,30 +137,37 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
                     j = CarPart_GetNextAppliedAttribute(TheCarPart, CT_bStringHash("EXCLUDEDECAL"), j))
                 {
                     CarPartIDName = j[1];
-                    for (k = 0; k < 170; ++k)
+                    for (k = CAR_SLOT_ID::__MODEL_FIRST; k < CAR_SLOT_ID::__NUM; ++k)
                     {
                         if (bStringHash((char const*)CarPartIDNames[2 * k + 1]) == CarPartIDName)
                             break;
                     }
-                    if (k != 69)
+                    if (k != CAR_SLOT_ID::PAINT_SPOILER)
                         *((BYTE*)RideInfo + CarSlotIDNames[2 * k] + 2104) = 0;
                 }
             }
+            */
+
+			// Hide excluded decal layout parts
+			int ExcludeDecalSlot = CarPart_GetExcludeDecal(TheCarPart, EDX_Unused);
+			if (ExcludeDecalSlot != -1 && ExcludeDecalSlot != CAR_SLOT_ID::PAINT_SPOILER)
+				*((BYTE*)RideInfo + 2104 + ExcludeDecalSlot) = 0;
         }
 
         switch (i)
         {
-        case 161: // HYDRAULICS
+        case CAR_SLOT_ID::HYDRAULICS:
             if (TheCarPart)
                 *((BYTE*)RideInfo + 1409) = *((BYTE*)TheCarPart + 5) >> 5;
             break;
 
-        case 29: // FRONT_WHEEL
+        case CAR_SLOT_ID::FRONT_WHEEL:
+        case CAR_SLOT_ID::REAR_WHEEL:
             if (IsBrowsingBrakePaint())
-                *((BYTE*)RideInfo + 2104 + 29) = 0; // FRONT_WHEEL visibility
+                *((BYTE*)RideInfo + 2104 + i) = 0; // FRONT_WHEEL visibility
             break;
 
-        case 9: // HOOD
+        case CAR_SLOT_ID::HOOD:
             HoodPart = (DWORD*)RideInfo[356 + 9];
             if (HoodPart)
             {
@@ -173,10 +181,52 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
                 ShowEngineThruHood = CarPart_GetAppliedAttributeUParam(HoodPart, CT_bStringHash("SHOWENGINE"), 0);
                 if (ShowEngineThruHood)
                     *((BYTE*)RideInfo + 2104 + 13) = 1; // ENGINE visibility
+
+                // Hood decals
+                for (int i = 0; i <= 99; i++) // Find which Hood the car has
+                {
+                    sprintf(KitNameBuf, "%s_STYLE%02d_", GetCarTypeName(CarType), i);
+                    KitNamePartialHash = bStringHash(KitNameBuf);
+                    PartHash = bStringHash2("HOOD", KitNamePartialHash);
+                    if (*TheCarPart == PartHash)
+                    {
+                        if (i == 0) // stock
+                        {
+                            sprintf(KitNameBuf, "%s_", GetCarTypeName(CarType));
+                            KitNamePartialHash = bStringHash(KitNameBuf);
+                        }
+
+                        // now check for the Hood layout
+                        DWORD* HoodDecalPart = (DWORD*)RideInfo[356 + CAR_SLOT_ID::DECAL_HOOD];
+
+                        if (HoodDecalPart)
+                        {
+                            for (int j = 0; j <= 99; j++) // Find which decal layout the car has
+                            {
+                                if (j == 0) sprintf(KitNameBuf, "%s_", GetCarTypeName(CarType));
+                                else sprintf(KitNameBuf, "%s_STYLE%02d_", GetCarTypeName(CarType), j);
+                                DWORD DecalNamePartialHash = bStringHash(KitNameBuf);
+
+                                if (*HoodDecalPart == bStringHash2("DECAL_HOOD_RECT_MEDIUM", DecalNamePartialHash)) // Layout 1
+                                {
+                                    RideInfo[356 + CAR_SLOT_ID::DECAL_HOOD] = (DWORD)CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, CAR_SLOT_ID::DECAL_HOOD, bStringHash2("DECAL_HOOD_RECT_MEDIUM", KitNamePartialHash), 0, -1);
+                                    break;
+                                }
+                                else if (*HoodDecalPart == bStringHash2("DECAL_HOOD_RECT_SMALL", DecalNamePartialHash)) // Layout 2
+                                {
+                                    RideInfo[356 + CAR_SLOT_ID::DECAL_HOOD] = (DWORD)CarPartDatabase_NewGetCarPart((DWORD*)_CarPartDB, CarType, CAR_SLOT_ID::DECAL_HOOD, bStringHash2("DECAL_HOOD_RECT_SMALL", KitNamePartialHash), 0, -1);
+                                    break;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                }
             }
             break;
 
-        case 10: // TRUNK
+        case CAR_SLOT_ID::TRUNK:
             TrunkPart = (DWORD*)RideInfo[356 + 10];
             if (TrunkPart)
             {
@@ -193,7 +243,7 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
             }
             break;
 
-        case 13: // ENGINE
+        case CAR_SLOT_ID::ENGINE:
             if (TheCarPart && *(int*)_TheGameFlowManager == 3)
             {
                 *((BYTE*)RideInfo + 2104 + 9) = 1; // HOOD visibility
@@ -203,7 +253,7 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
             }
             break;
 
-        case 8: // TOP
+        case CAR_SLOT_ID::TOP:
             // CARNAME_(STYLExx_)TOP
             if (!TheCarPart)
             {
@@ -245,7 +295,7 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
 
             break;
 
-        case 24: // QUARTER
+        case CAR_SLOT_ID::QUARTER:
             if (TheCarPart)
             {
                 for (int i = 0; i <= 99; i++) // Find which quarter the car has
@@ -314,7 +364,7 @@ void __fastcall RideInfo_UpdatePartsEnabled(DWORD* RideInfo, void* EDX_Unused)
             }
             break;
        
-        case 6: // WIDE_BODY
+        case CAR_SLOT_ID::WIDE_BODY:
             if (TheCarPart && (TheCarPart1 = *((BYTE*)TheCarPart + 5), TheCarPart1 >> 5))
             {
                 KitNumber = TheCarPart1 & 0x1F;

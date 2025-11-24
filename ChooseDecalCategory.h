@@ -230,3 +230,122 @@ void __fastcall ChooseDecalCategory_Setup(DWORD* ChooseDecalCategory, void* EDX_
 		}
 	}
 }
+
+void __fastcall ChooseDecalCategory_InstallNeededLayoutPart(DWORD *ChooseDecalCategory, void *EDX_Unused)
+{
+	DWORD* LayoutPart; // eax
+	int LayoutID = 2; // [esp+0h] [ebp-4h]
+
+	int location = CAR_SLOT_ID::__LAST_NONRENDER;
+	int slot = CAR_SLOT_ID::__LAST_NONRENDER;
+
+	switch (*(DWORD*)(ChooseDecalCategory[22] + 72))
+	{
+	case 0x20006: // Left Quarter Layout 1
+		LayoutID = 1;
+		location = CAR_SLOT_ID::DECAL_LEFT_QUARTER;
+		slot = CAR_SLOT_ID::DECAL_LEFT_QUARTER_TEX0;
+		break;
+
+	case 0x20007: // Left Quarter Layout 2
+		location = CAR_SLOT_ID::DECAL_LEFT_QUARTER;
+		slot = CAR_SLOT_ID::DECAL_LEFT_QUARTER_TEX0;
+		break;
+		
+	case 0x20008: // Right Quarter Layout 1
+		LayoutID = 1;
+		location = CAR_SLOT_ID::DECAL_RIGHT_QUARTER;
+		slot = CAR_SLOT_ID::DECAL_RIGHT_QUARTER_TEX0;
+		break;
+
+	case 0x20009: // Right Quarter Layout 2
+		location = CAR_SLOT_ID::DECAL_RIGHT_QUARTER;
+		slot = CAR_SLOT_ID::DECAL_RIGHT_QUARTER_TEX0;
+		break;
+
+	case 0x2000A: // Hood Layout 1
+		LayoutID = 1;
+		location = CAR_SLOT_ID::DECAL_HOOD;
+		slot = CAR_SLOT_ID::DECAL_HOOD_TEX0;
+		break;
+
+	case 0x2000B: // Hood Layout 2
+		location = CAR_SLOT_ID::DECAL_HOOD;
+		slot = CAR_SLOT_ID::DECAL_HOOD_TEX0;
+		break;
+
+	default:
+		break;
+	}
+
+	LayoutPart = CarCustomizeManager_GetLayoutPart((DWORD*)gCarCustomizeManager, EDX_Unused, location, LayoutID);
+
+	if (LayoutPart)
+	{
+		// Remove decals if new layout does not have enough slots
+		int NumDecalSlots = CarPart_GetAppliedAttributeUParam(LayoutPart, CT_bStringHash("NUM_DECALS"), 0);
+
+		for (int i = NumDecalSlots; i < 8; i++)
+		{
+			CarCustomizeManager_RemoveDecal((DWORD*)gCarCustomizeManager, slot + i);
+		}
+
+		// Finally install new layout part
+		CarCustomizeManager_AddPaintShopPart((DWORD*)gCarCustomizeManager, location, LayoutPart);
+	}
+		
+	CarCustomizeManager_ResetPreviewToPaintSetup((DWORD*)gCarCustomizeManager);
+}
+
+bool __fastcall ChooseDecalCategory_NeedsNewLayoutPart(DWORD* ChooseDecalCategory, void* EDX_Unused)
+{
+	DWORD* LayoutPart, *InstalledPart; // eax
+	int LayoutID = 2; // [esp+0h] [ebp-4h]
+
+	int location = CAR_SLOT_ID::__LAST_NONRENDER;
+
+	switch (*(DWORD*)(ChooseDecalCategory[22] + 72))
+	{
+	case 0x20006: // Left Quarter Layout 1
+		LayoutID = 1;
+		location = CAR_SLOT_ID::DECAL_LEFT_QUARTER;
+		break;
+
+	case 0x20007: // Left Quarter Layout 2
+		location = CAR_SLOT_ID::DECAL_LEFT_QUARTER;
+		break;
+
+	case 0x20008: // Right Quarter Layout 1
+		LayoutID = 1;
+		location = CAR_SLOT_ID::DECAL_RIGHT_QUARTER;
+		break;
+
+	case 0x20009: // Right Quarter Layout 2
+		location = CAR_SLOT_ID::DECAL_RIGHT_QUARTER;
+		break;
+
+	case 0x2000A: // Hood Layout 1
+		LayoutID = 1;
+		location = CAR_SLOT_ID::DECAL_HOOD;
+		break;
+
+	case 0x2000B: // Hood Layout 2
+		location = CAR_SLOT_ID::DECAL_HOOD;
+		break;
+
+	default:
+		break;
+	}
+
+	LayoutPart = CarCustomizeManager_GetLayoutPart((DWORD*)gCarCustomizeManager, EDX_Unused, location, LayoutID);
+	if (!LayoutPart) return CarCustomizeManager_GetNumDecalsForInstalledLayoutPart((DWORD*)gCarCustomizeManager, location) != 0;
+
+	InstalledPart = CarCustomizeManager_GetLayoutInSetup((DWORD*)gCarCustomizeManager, EDX_Unused, location);
+	if (!InstalledPart)	InstalledPart = RideInfo_GetPart((DWORD*)gTheRideInfo, location);
+	if (!InstalledPart) return true;
+
+	int NumDecalSlots = CarPart_GetAppliedAttributeUParam(LayoutPart, CT_bStringHash("NUM_DECALS"), 0);
+	int NumDecalSlotsInstalled = CarCustomizeManager_GetNumDecalsForInstalledLayoutPart((DWORD*)gCarCustomizeManager, location);
+
+	return NumDecalSlots != NumDecalSlotsInstalled || *LayoutPart != *InstalledPart;
+}

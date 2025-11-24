@@ -88,17 +88,17 @@ CarPartIDName* CarPartIDNames = (CarPartIDName*)0x803338;
 
 char const* GetCarPartIDName(int CarPartID)
 {
-	if (CarPartID < 0 || CarPartID >= __NUM)
+	if (CarPartID < 0 || CarPartID >= CAR_PART_ID::p___NUM)
 		return "NONE";
 	return CarPartIDNames[CarPartID].Name;
 }
 
 int GetCarPartIDFromName(char const* Name)
 {
-	for (int i = 0; i < __NUM; ++i)
+	for (int i = 0; i < CAR_PART_ID::p___NUM; ++i)
 	{
 		if (strcmp(CarPartIDNames[i].Name, Name) == 0)
 			return CarPartIDNames[i].CarPartID;
 	}
-	return __INVALID;
+	return CAR_PART_ID::p___INVALID;
 }
