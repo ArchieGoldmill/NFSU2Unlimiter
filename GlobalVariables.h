@@ -23,6 +23,7 @@
 #define _PerformanceClassRange 0x7A1A84
 #define _UnlockAllThings 0x838464
 #define _g_pEAXSound 0x82B884
+#define _TheRaceParameters 0x89E7A0
 #define ForceHeadlightsOn 0x8A1BF0
 #define ForceBrakelightsOn 0x8A1BF4
 #define ForceReverselightsOn 0x8A1BF8

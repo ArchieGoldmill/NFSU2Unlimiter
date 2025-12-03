@@ -608,7 +608,7 @@ int CarRenderInfo_GetLightState(DWORD* CarRenderInfo, int LightID)
 	int OnLights = CarRenderInfo[CRI_Loc_OnLights];
 	int BrokenLights = CarRenderInfo[CRI_Loc_BrokenLights];
 
-	if (OnLights & LightID) result = LightsOn ? 1 : 0; // ON or OFF
+	if (OnLights & LightID) result = 1; // ON
 	if (BrokenLights & LightID) result = DamageLights ? 2 : 0; // DAMAGE0 or OFF
 
 	return result;
@@ -1721,18 +1721,18 @@ void __fastcall CarRenderInfo_CreateCarLightFlares(DWORD* CarRenderInfo, void* E
 					{
 					case CT_bStringHash("CENTRE_HEADLIGHT"):
 						FlareType = 0; // ELF_CAR_HEADLIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT, 2, CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT_BULB, 0, 0, 0), 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT, 2, 0, 0), 0);
 						if (!Flare->ColourTint) goto _LeftHeadlight;
 						break;
 					case CT_bStringHash("RIGHT_HEADLIGHT"):
 						FlareType = 0; // ELF_CAR_HEADLIGHT
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT, 1, CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT_BULB, 0, 0, 0), 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT, 1, 0, 0), 0);
 						if (!Flare->ColourTint) goto _LeftHeadlight;
 						break;
 					case CT_bStringHash("LEFT_HEADLIGHT"):
 						FlareType = 0; // ELF_CAR_HEADLIGHT
 					_LeftHeadlight:
-						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT_BULB, 0, 0, 0), 0);
+						Flare->ColourTint = CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT_BULB, 0, CarRenderInfo_GetColor(CarRenderInfo, 0, CAR_SLOT_ID::HEADLIGHT, 0, 0, 0), 0);
 						break;
 
 
@@ -1861,7 +1861,7 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 
 		//if (reflection) CarRenderInfo_RenderTextureHeadlights_Hook(CarRenderInfo, 0, view, (float*)LocalWorld, 0);
 		// Debug cop lights
-		CarRenderInfo_SetLightState(CarRenderInfo, 0x1000, true);
+		CarRenderInfo_SetLightState(CarRenderInfo, ForceLightFlaresOn, true);
 
 		DWORD* RideInfo = (DWORD*)CarRenderInfo[1]; // this->pRideInfo
 		if (IsCop(RideInfo[0]) && (CarRenderInfo[CRI_Loc_OnLights] & 0x1000) != 0)// UsageType = Cop && mOnLights = Cop Lights
@@ -1925,7 +1925,7 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 			if (force_light_state & 2) // FORCE_BRAKELIGHTS_ON
 			{
 				IntsLeftBrakelight += 1.0f;
-				IntsRightBrakelight = IntsRightBrakelight;
+				IntsRightBrakelight = IntsLeftBrakelight;
 				IntsCentreBrakelight = 1.0f;
 			}
 			else if (TheCar && *((BYTE*)TheCar + 2372))
@@ -2059,21 +2059,21 @@ void __fastcall CarRenderInfo_RenderFlaresOnCar(DWORD* CarRenderInfo, void* EDX_
 					switch (Flare->NameHash)
 					{
 					case 0x9DB90133: // LEFT_HEADLIGHT
-						if (TheCar && !*((BYTE*)TheCar + 2365)) continue;
+						//if (TheCar && !*((BYTE*)TheCar + 2365)) continue;
 						IntensityScale = FlickerHeadlights ? copflicker * IntsLeftHeadlight : IntsLeftHeadlight;
-						Flare->ColourTint = CarRenderInfo[224];
+						//Flare->ColourTint = CarRenderInfo[224];
 						break;
 
 					case 0xD09091C6: // RIGHT_HEADLIGHT
-						if (TheCar && !*((BYTE*)TheCar + 2365)) continue;
+						//if (TheCar && !*((BYTE*)TheCar + 2365)) continue;
 						IntensityScale = FlickerHeadlights ? (1.0f - copflicker) * IntsRightHeadlight : IntsRightHeadlight;
-						Flare->ColourTint = CarRenderInfo[224];
+						//Flare->ColourTint = CarRenderInfo[224];
 						break;
 
 					case 0x7A5BCF69: // CENTRE_HEADLIGHT
-						if (TheCar && !*((BYTE*)TheCar + 2365)) continue;
+						//if (TheCar && !*((BYTE*)TheCar + 2365)) continue;
 						IntensityScale = IntsCentreHeadlight;
-						Flare->ColourTint = CarRenderInfo[224];
+						//Flare->ColourTint = CarRenderInfo[224];
 						break;
 
 					case 0x31A66786: // LEFT_BRAKELIGHT

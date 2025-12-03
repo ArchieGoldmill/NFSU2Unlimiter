@@ -14,85 +14,6 @@ void __declspec(naked) PushCantPaintTrunkDialogText()
     }
 }
 
-// 0x55CEB0
-void __declspec(naked) TrunkAnimCodeCave_ChoosePaintScreen_StopBrowsingPaints()
-{
-    _asm
-    {
-        cmp eax, 0x48
-        jz TrunkAnimClose
-        cmp eax, 0x44
-        jnz loc_55CEE9
-
-        EngineAnimClose:
-            push 0x55CEB5
-            retn
-
-        TrunkAnimClose:
-            mov ecx, dword ptr ds : [_FECarConfigRef]
-            mov eax, dword ptr ds : [ecx]
-            call dword ptr ds : [eax + 8]
-            push eax
-            call IsCarPartsAnimLoadedForCar
-            add esp, 4
-            test al, al
-            jz loc_55CEE0
-            push 0x3F800000
-            push 0
-            push 1
-            call FEDoCarPartAnimNow
-            add esp, 0x0C
-            push 0x55CEF5
-            retn
-
-        loc_55CEE0 :
-            push 0x55CEE0
-            retn
-
-        loc_55CEE9:
-            push 0x55CEE9
-            retn
-    }
-}
-
-// 0x55CCBE
-void __declspec(naked) TrunkAnimCodeCave_ChoosePaintScreen_StartBrowsingPaints()
-{
-    _asm
-    {
-        mov dword ptr ds: [esi + 0x28], 0x4E4485FE
-        mov byte ptr ds: [esi + 0x188], 1
-        cmp edi, 0x48
-        jz TrunkAnimOpen
-        cmp edi, 0x44
-
-        EngineAnimOpen:
-            push 0x55CCCF
-            retn
-
-        TrunkAnimOpen:
-            mov ecx, dword ptr ds: [_FECarConfigRef]
-            mov eax, dword ptr ds : [ecx]
-            call dword ptr ds: [eax+8]
-            push eax
-            call IsCarPartsAnimLoadedForCar
-            add esp,4
-            test al,al
-            jz loc_55CCFC
-            push 0x3F800000
-            push 1
-            push 1
-            call FEDoCarPartAnimNow
-            add esp, 0x0C
-            push 0x55CD11
-            retn
-
-        loc_55CCFC:
-            push 0x55CCFC
-            retn
-    }
-}
-
 bool __fastcall ChoosePaintScreen_CanPaintThisPart(DWORD* ChoosePaintScreen, void* EDX_Unused)
 {
     bool result = 1; // al
@@ -1114,5 +1035,32 @@ void __fastcall ChoosePaintScreen_ScrollPaints(DWORD* ChoosePaintScreen, void* E
             int CurrHighlightID = bList_TraversebList(ChoosePaintScreen + 86, (DWORD*)ChoosePaintScreen[90]);
             FEngPrintf((DWORD*)ChoosePaintScreen[91], "%s^%d/%d", name, CurrHighlightID, ChoosePaintScreen[95]); // fix "capa del palvo"*/
         }
+    }
+}
+
+void __fastcall ChoosePaintScreen_StartBrowsingPaints(DWORD* ChoosePaintScreen, void* EDX_Unused)
+{
+    ChoosePaintScreen_StartBrowsingPaints_Game(ChoosePaintScreen);
+
+    // Do custom animations
+    if ((DWORD*)ChoosePaintScreen[86] != ChoosePaintScreen + 86)
+    {
+        DWORD* CategoryNode = (DWORD*)ChoosePaintScreen[22];
+        if (CategoryNode)
+        {
+            GetAndDoFEPartAnim(CategoryNode[18], 1, 1.0f);
+        }
+    }
+}
+
+void __fastcall ChoosePaintScreen_StopBrowsingPaints(DWORD* ChoosePaintScreen, void* EDX_Unused, bool ass)
+{
+    ChoosePaintScreen_StopBrowsingPaints_Game(ChoosePaintScreen, ass);
+
+    // Do custom animations
+    DWORD* CategoryNode = (DWORD*)ChoosePaintScreen[22];
+    if (CategoryNode)
+    {
+        GetAndDoFEPartAnim(CategoryNode[18], 0, 1.0f);
     }
 }

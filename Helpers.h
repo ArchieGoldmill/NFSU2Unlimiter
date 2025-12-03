@@ -77,6 +77,18 @@ bool UsesSupercharger(BYTE CarTypeID)
 	return (SpoolBase == 0.0f) && (SpoolTop == 0.0f);
 }
 
+void DoFEPartAnim(int location, bool on, float amount)
+{
+	if (on && FEGetAnimationState(location))
+	{
+		FEDoCarPartAnimNow(location, on, amount);
+	}
+	if (!on && !FEGetAnimationState(location))
+	{
+		FEDoCarPartAnimNow(location, on, amount);
+	}
+}
+
 void GetAndDoFEPartAnim(int CarSlotID, bool on, float amount)
 {
 	DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
@@ -90,24 +102,24 @@ void GetAndDoFEPartAnim(int CarSlotID, bool on, float amount)
 	{
 		if (location == 6) // Both hood and trunk
 		{
-			FEDoCarPartAnimNow(0, on, amount);
-			FEDoCarPartAnimNow(1, on, amount);
+			DoFEPartAnim(0, on, amount);
+			DoFEPartAnim(1, on, amount);
 		}
 		else if (location == 5) // Both doors
 		{
-			FEDoCarPartAnimNow(2, on, amount);
-			FEDoCarPartAnimNow(3, on, amount);
+			DoFEPartAnim(2, on, amount);
+			DoFEPartAnim(3, on, amount);
 		}
 		else if (location == 4) // Explode (all)
 		{
-			FEDoCarPartAnimNow(0, on, amount);
-			FEDoCarPartAnimNow(1, on, amount);
-			FEDoCarPartAnimNow(2, on, amount);
-			FEDoCarPartAnimNow(3, on, amount);
+			DoFEPartAnim(0, on, amount);
+			DoFEPartAnim(1, on, amount);
+			DoFEPartAnim(2, on, amount);
+			DoFEPartAnim(3, on, amount);
 		}
 		else if (location >= 0 && location <= 3) // Not none
 		{
-			FEDoCarPartAnimNow(location, on, amount);
+			DoFEPartAnim(location, on, amount);
 		}
 	}
 }

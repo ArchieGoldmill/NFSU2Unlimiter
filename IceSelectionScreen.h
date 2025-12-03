@@ -163,6 +163,7 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 	// Read Part Options for the car
 	DWORD FECarConfig = *(DWORD*)_FECarConfigRef;
 	int CarTypeID = (*(int(__thiscall**)(int))(*(DWORD*)FECarConfig + 4))(FECarConfig);
+	DWORD* CategoryNode = (DWORD*)IceSelectionScreen[22];
 
 	char const* IceSelectionScreenPackage = (char const*)IceSelectionScreen[1];
 	DWORD* AMenuOption;
@@ -203,15 +204,10 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 	case 0:
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
-			if (FEGetAnimationState(1))
-			{
-				if (!FEGetAnimationState(0))
-					FEDoCarPartAnimNow(0, 0, 1.0f);
-			}
-			else
-			{
-				FEDoCarPartAnimNow(1, 0, 1.0f);
-			}
+			DoFEPartAnim(0, 0, 1.0f);
+			DoFEPartAnim(1, 0, 1.0f);
+			DoFEPartAnim(2, 0, 1.0f);
+			DoFEPartAnim(3, 0, 1.0f);
 		}
 		IceSelectionScreen[10] = CT_bStringHash("HELP_CARSPECIALTIES_SHOP_MAIN");
 
@@ -419,7 +415,8 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
-			FEDoCarPartAnimNow(1, 1, 1.0f);
+			//FEDoCarPartAnimNow(1, 1, 1.0f);
+			GetAndDoFEPartAnim(CAR_SLOT_ID::TRUNK_AUDIO, 1, 1.0f);
 		}
 		*((BYTE*)IceSelectionScreen + 360) = 1;
 		IceSelectionScreen[10] = bStringHash("HELP_CARSPECIALTIES_SHOP_TRUNKLAYOUT_SELECT");
@@ -449,7 +446,8 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
-			FEDoCarPartAnimNow(1, 1, 1.0f);
+			//FEDoCarPartAnimNow(1, 1, 1.0f);
+			GetAndDoFEPartAnim(CAR_SLOT_ID::TRUNK_AUDIO, 1, 1.0f);
 		}
 		*((BYTE*)IceSelectionScreen + 360) = 1;
 		IceSelectionScreen[10] = bStringHash("HELP_CARSPECIALTIES_SHOP_TRUNKLAYOUT_OR_COMPONENTS_SELECT");
@@ -495,7 +493,8 @@ void __fastcall IceSelectionScreen_Setup(DWORD* IceSelectionScreen, void* EDX_Un
 
 		if (IsCarPartsAnimLoadedForCar(GetCarTypeNameHashFromFECarConfig()))
 		{
-			FEDoCarPartAnimNow(1, 1, 1.0f);
+			//FEDoCarPartAnimNow(1, 1, 1.0f);
+			GetAndDoFEPartAnim(CAR_SLOT_ID::TRUNK_AUDIO, 1, 1.0f);
 		}
 		*((BYTE*)IceSelectionScreen + 360) = 1;
 		IceSelectionScreen[10] = bStringHash("HELP_CARSPECIALTIES_SHOP_AUDIOCOMPONENTS_SELECT");

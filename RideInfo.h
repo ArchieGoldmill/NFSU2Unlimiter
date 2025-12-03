@@ -550,3 +550,43 @@ DWORD __fastcall RideInfo_GetStockPartNameHash(DWORD* RideInfo, void* EDX_Unused
 
 
 */
+
+DWORD g_displayHUDprefix = CT_bStringHash("3RDPERSON_");
+DWORD* g_displayHUDattributes = (DWORD*)0x839BF0;
+
+void GetRidePartAttributes()
+{
+    DWORD* part = RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::CUSTOM_HUD);
+    if (part)
+    {
+        g_displayHUDattributes[0] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("HUDINDEX"), 0);
+        g_displayHUDprefix = bStringHash2("_", CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("TEXTURE_NAME"), CT_bStringHash("3RDPERSON")));
+    }
+    
+    part = RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::HUD_BACKING_COLOUR);
+    if (part)
+    {
+        g_displayHUDattributes[13] = (DWORD)part;
+        g_displayHUDattributes[3] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("RED"), 0);
+        g_displayHUDattributes[2] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("GREEN"), 0);
+        g_displayHUDattributes[1] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("BLUE"), 0);
+    }
+
+    part = RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::HUD_NEEDLE_COLOUR);
+    if (part)
+    {
+        g_displayHUDattributes[15] = (DWORD)part;
+        g_displayHUDattributes[11] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("RED"), 0);
+        g_displayHUDattributes[10] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("GREEN"), 0);
+        g_displayHUDattributes[9] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("BLUE"), 0);
+    }
+
+    part = RideInfo_GetPart((DWORD*)gTheRideInfo, CAR_SLOT_ID::HUD_CHARACTER_COLOUR);
+    if (part)
+    {
+        g_displayHUDattributes[14] = (DWORD)part;
+        g_displayHUDattributes[7] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("RED"), 0);
+        g_displayHUDattributes[6] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("GREEN"), 0);
+        g_displayHUDattributes[5] = CarPart_GetAppliedAttributeUParam(part, CT_bStringHash("BLUE"), 0);
+    }
+}

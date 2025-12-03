@@ -12,7 +12,7 @@ bool AllNewCarsInitiallyUnlocked, AllNewCarsCanBeDrivenByAI, DisappearingWheelsF
 
 BYTE RandomlyChooseableCarConfigsNorthAmerica[256], RandomlyChooseableCarConfigsRestOfWorld[256], RandomlyChooseableSUVs[256], CarLotUnlockData[256] = { 0 };
 int UnlockedAtBootQuickRaceNorthAmerica[256], UnlockedAtBootQuickRaceRestOfWorld[256], PerfConfigTables[512];
-int RandomCarCount, RandomSUVCount, CarTypeID_Temp, CarTypeHash_Temp, CarOriginResultTemp, LinkLicensePlateToTrunk_Temp;
+int RandomCarCount, RandomSUVCount, CarTypeID_Temp, CarTypeHash_Temp, CarOriginResultTemp, LinkLicensePlateToTrunk_Temp, ForceLightFlaresOn;
 
 char AttachmentNameBuf[64];
 
@@ -59,6 +59,9 @@ char AttachmentNameBuf[64];
 #include "CareerEventData.h"
 #include "StreamingTrafficCarManager.h"
 #include "RandomCharacterNames.h"
+#include "Tachometer.h"
+#include "HUD_Customizer.h"
+#include "CustomHUD_Browser.h"
 #include "Helpers.h"
 #include "UnlimiterData.h"
 #include "CodeCaves.h"
@@ -95,6 +98,7 @@ int Init()
 	// Debug
 	DisableTextureReplacement = mINI_ReadInteger(Settings, "Debug", "DisableTextureReplacement", 0) != 0;
 	DisableLightFlareColors = mINI_ReadInteger(Settings, "Debug", "DisableLightFlareColors", 0) != 0;
+	ForceLightFlaresOn = mINI_ReadInteger(Settings, "Debug", "ForceLightFlaresOn", 0);
 	ExportCameraInfoIni = mINI_ReadInteger(Settings, "Debug", "ExportCameraInfo", 0) != 0;
 	EnableReleasePrintf = mINI_ReadInteger(Settings, "Debug", "EnableReleasePrintf", EnableReleasePrintf) != 0;
 
@@ -196,9 +200,13 @@ int Init()
 	//injector::MakeCALL(0x563A1E, ChoosePaintScreen_GetPaintBrandHashFromCarSlotId, true); // ChoosePaintScreen::NotificationMessage (crash)
 	// Restore trunk audio paint
 	injector::WriteMemory<BYTE>(0x50F625, 1, true); // PAINT_AUDIO - ChoosePaintScreen::GetPaintBrandHashFromCarSlotId
-	injector::MakeRangedNOP(0x55CCBE, 0x55CCCF, true); // ChoosePaintScreen::StartBrowsingPaints
-	injector::MakeJMP(0x55CCBE, TrunkAnimCodeCave_ChoosePaintScreen_StartBrowsingPaints, true);
-	injector::MakeJMP(0x55CEB0, TrunkAnimCodeCave_ChoosePaintScreen_StopBrowsingPaints, true);  // ChoosePaintScreen::StopBrowsingPaints
+	injector::MakeRangedNOP(0x55CCE9, 0x55CCFA, true); // ChoosePaintScreen::StartBrowsingPaints, Disable vanilla anim thingy
+	injector::MakeRangedNOP(0x55CECD, 0x55CEDE, true); // ChoosePaintScreen::StopBrowsingPaints, Disable vanilla anim thingy
+	injector::MakeCALL(0x5635D0, ChoosePaintScreen_StartBrowsingPaints, true); // ChoosePaintScreen::NotificationMessage
+	injector::MakeCALL(0x563CA1, ChoosePaintScreen_StartBrowsingPaints, true); // ChoosePaintScreen::Setup
+	injector::MakeCALL(0x5638D5, ChoosePaintScreen_StopBrowsingPaints, true);  // ChoosePaintScreen::NotificationMessage
+	injector::MakeCALL(0x563AE6, ChoosePaintScreen_StopBrowsingPaints, true);  // ChoosePaintScreen::NotificationMessage
+	injector::MakeCALL(0x563B81, ChoosePaintScreen_StopBrowsingPaints, true);  // ChoosePaintScreen::NotificationMessage
 	injector::WriteMemory(0x563C4C, &PushCantPaintTrunkDialogText, true); // ChoosePaintScreen::NotificationMessage
 	injector::MakeCALL(0x55CC75, ChoosePaintScreen_BuildPaintList, true); // ChoosePaintScreen::StartBrowsingPaints
 	injector::MakeCALL(0x55CCA9, ChoosePaintScreen_BuildPaintList, true); // ChoosePaintScreen::StartBrowsingPaints
@@ -225,6 +233,7 @@ int Init()
 	// Add animations for Specialties
 	injector::MakeCALL(0x556A87, IceSelectionScreen_DoSpecialScroll, true); // IceSelectionScreen::StartBrowsingParts
 	injector::MakeCALL(0x568B7B, IceSelectionScreen_DoSpecialScroll, true); // IceSelectionScreen::NotificationMessage
+	injector::MakeCALL(0x56945B, IcePartsBrowser_DoTheAnimation, true); // IcePartsBrowser::NotificationMessage
 
 	// Add animations for Neon
 	injector::MakeJMP(0x50F290, CustomizeNeonMenu_DoSpecialScroll, true); // 4 references
@@ -423,6 +432,16 @@ int Init()
 		injector::MakeCALL(0x55C1B1, RideInfo_SetPart_Rims, true); // CarCustomizeManager::PreviewPart
 		// TODO: Also check ChooseSpinnerBrand or find a smarter way to do this shit
 	}
+
+	// Allow custom prefixes for custom HUDs
+	injector::MakeCALL(0x4F571F, ChooseLoadableTextures, true); // Tachometer::Tachometer
+	injector::MakeCALL(0x4F68DF, ChooseLoadableTextures, true); // DragTachometer::DragTachometer
+	injector::MakeCALL(0x578031, ChooseLoadableTextures, true); // TrackLoader::LoadHudTextures
+	injector::MakeCALL(0x5647A7, HUD_Customizer_DisplayCurrentHUD, true); // HUD_Customizer::NotificationMessage
+	injector::MakeCALL(0x56C2AC, GetRidePartAttributes, true); // CustomHUD_Browser::CustomHUD_Browser
+	injector::MakeCALL(0x55D76C, CustomHUD_Browser_RefreshHeader, true); // sub_55D660
+	injector::MakeCALL(0x56C2B3, CustomHUD_Browser_RefreshHeader, true); // CustomHUD_Browser::CustomHUD_Browser
+	injector::MakeRangedNOP(0x56479A, 0x56479F, true); // Refresh custom HUD menu no matter what (even when the next/prev part has the same hud index)
 
 	if (StreamingTrafficCarManagerFix)
 	{
